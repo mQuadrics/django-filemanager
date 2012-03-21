@@ -13,7 +13,7 @@ from seautils.utils import compile_js
 
 class FileAdmin(BaseModelAdmin):
     class Media:
-        js = compile_js(['filemanager/js/admin_list.coffee'])
+        js = compile_js(['filemanager/js/admin_list.coffee', 'filemanager/js/addr_gen.coffee'])
 
     date_hierarchy = ('create_time')
     list_display = ('icon', 'static_file', 'category', 'create_time', 'file_ext')
@@ -57,6 +57,8 @@ class FileAdmin(BaseModelAdmin):
         def queryset_modifier(queryset):
             if media_type == 'image':
                 queryset = queryset.images()
+            elif media_type == 'video':
+                queryset = queryset.videos()
             return queryset
         
         list_display = ['select_button'] + list(self.list_display)

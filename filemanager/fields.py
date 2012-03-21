@@ -11,7 +11,7 @@ from django.conf import settings
 
 from south.modelsinspector import add_introspection_rules
 
-from .models import StaticFile
+
 from seautils.utils import compile_js
 
 class ImageWidget(Widget):
@@ -34,7 +34,9 @@ class ImageWidget(Widget):
         final_attrs['type'] = 'hidden'
 
         # wyciagniecie odpowiedniego media dla podanego id
+        from filemanager.models import StaticFile
         try:
+
             media = StaticFile.objects.get(id=value)
         except StaticFile.DoesNotExist:
             media = None
@@ -52,11 +54,21 @@ class ImageWidget(Widget):
             'popup_addr_base': self.POPUP_ADDR_BASE
         })
 
+class VideoWidget(ImageWidget):
+    POPUP_ADDR_BASE = '/staticfile/popuplist/video/'
+
+
 class ImageFormField(ModelChoiceField):
     """
     Pole formowe uzywane dla pola ImageField
     """
     widget = ImageWidget
+
+class VideoFormField(ModelChoiceField):
+    """
+    Pole formowe uzywane dla pola ImageField
+    """
+    widget = VideoWidget
 
 class ImageField(ForeignKey):
     """
@@ -65,8 +77,11 @@ class ImageField(ForeignKey):
     def __init__(self, *args, **kwargs):
         argsl = list(args)
         if 'to' in kwargs:
-            kwargs['to'] = StaticFile
+            if kwargs['to'] != 'self':
+                from filemanager.models import StaticFile
+                kwargs['to'] = StaticFile
         else:
+            from filemanager.models import StaticFile
             if argsl:
                 argsl[0] = StaticFile
             else:
@@ -80,13 +95,22 @@ class ImageField(ForeignKey):
         defaults.update(kwargs)
         return super(ImageField, self).formfield(**defaults)
 
+class VideoField(ImageField):
+    def formfield(self, **kwargs):
+        defaults = {
+            'form_class': VideoFormField,
+        }
+        defaults.update(kwargs)
+        return super(VideoField, self).formfield(**defaults)
+
+
 class ImageVideoField(ImageField):
     pass
 
 # zasady zdefiniowane dla southa
 rules = [
   (
-    (ImageField, ImageVideoField),
+    (ImageField, ImageVideoField, VideoField),
     [],
     {
         "to": ["rel.to", {}],
@@ -97,3 +121,5 @@ rules = [
   )
 ]
 add_introspection_rules(rules, ["^filemanager\.fields\.ImageField"])
+add_introspection_rules(rules, ["^filemanager\.fields\.ImageVideoField"])
+add_introspection_rules(rules, ["^filemanager\.fields\.VideoField"])
