@@ -44,7 +44,7 @@ def upload_file(request, signal_key):
             return HttpResponseRedirect(reverse('plupload_sample.upload.views.upload_file'))
 
 @expire_in(seconds=settings.THUMBNAIL_EXPIRES)
-def serve_img(request, file_id, params):
+def serve_img(request, file_id, params, ext):
     """
     Params:
     size_index
@@ -77,7 +77,13 @@ def serve_img(request, file_id, params):
 
     mimetype, encoding = mimetypes.guess_type(static_file.filename)
     mimetype = mimetype or 'application/octet-stream'
+
+    image_format = 'JPEG'
+    ext = ext.lower()
+    if ext == 'png':
+        image_format = 'PNG'
+    
     response = HttpResponse()
-    ni.save(response, 'JPEG', quality=settings.THUMBNAIL_QUALITY)
+    ni.save(response, image_format, quality=settings.THUMBNAIL_QUALITY)
     response['Content-Type'] = '%s; charset=utf-8' % (mimetype)
     return response
