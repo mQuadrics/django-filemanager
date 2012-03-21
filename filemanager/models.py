@@ -109,8 +109,7 @@ class StaticFile(models.Model):
 
     def url(self):
         if self.static_file_thumbnail:
-            return self.static_file_thumbnail.image_path(3, '50%20')
-            return self.static_file_thumbnail.storage.url(str(self.static_file_thumbnail))
+            return self.static_file_thumbnail.image_path(1)
 
         return self.static_file.storage.url(str(self.static_file))
 
