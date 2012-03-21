@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from filemanager.fields import ImageField
 
 from .settings import ICONS_PATH_FORMAT_STR, AVAILABLE_ICONS, IMAGE_ICON_NAME, IMAGE_ICONS
 import math
@@ -53,6 +54,10 @@ class StaticFileQueryset(models.query.QuerySet):
         return self.filter(
             reduce(lambda x, y: x | Q(filename__iendswith=y), StaticFile.IMAGE_EXTENSIONS, Q()))
 
+    def videos(self):
+        return self.filter(
+            reduce(lambda x, y: x | Q(filename__iendswith=y), StaticFile.VIDEO_EXTENSIONS, Q()))
+
 class StaticFileManager(models.Manager):
     def get_query_set(self):
         return StaticFileQueryset(self.model, using=self._db)
@@ -60,14 +65,19 @@ class StaticFileManager(models.Manager):
     def images(self):
         return self.all().images()
 
+    def videos(self):
+        return self.all().videos()
+
 class StaticFile(models.Model):
     IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'gif', 'png', 'bmp']
+    VIDEO_EXTENSIONS = ['flv']
 
     create_time = models.DateTimeField(u'stworzony', auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(User, null=True, blank=True)
     category = models.ForeignKey(FileCategory, verbose_name=u"Kategoria pliku", null=True)
     static_file = models.FileField(u"Plik", upload_to=generate_file_path)
+    static_file_thumbnail = ImageField(to='self', blank=True, null=True)
     filename = models.CharField(u'Oryginalna nazwa pliku', max_length=100, blank=True,
                                 help_text=u'Przy dodawaniu pliku nazwa zapisze się samoczynnie')
     description = models.CharField(u'Krótki opis', max_length=200,
@@ -98,6 +108,10 @@ class StaticFile(models.Model):
             'params': params})
 
     def url(self):
+        if self.static_file_thumbnail:
+            return self.static_file_thumbnail.image_path(3, '50%20')
+            return self.static_file_thumbnail.storage.url(str(self.static_file_thumbnail))
+
         return self.static_file.storage.url(str(self.static_file))
 
     def as_base64(self):
@@ -113,7 +127,7 @@ class StaticFile(models.Model):
             return self.url()
             return ICONS_PATH_FORMAT_STR % IMAGE_ICON_NAME
         else:
-            return ''
+            return self.url()
 
     def size(self):
         if os.path.exists(self.file_path):
