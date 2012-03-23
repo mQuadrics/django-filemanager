@@ -1,6 +1,7 @@
 #coding: utf-8
 
 from __future__ import absolute_import
+import commands
 
 import os
 import base64
@@ -11,6 +12,8 @@ from django.db import models
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.db.models.signals import post_save
+from django.dispatch.dispatcher import receiver
 from filemanager.fields import ImageField
 
 from .settings import ICONS_PATH_FORMAT_STR, AVAILABLE_ICONS, IMAGE_ICON_NAME, IMAGE_ICONS
@@ -92,6 +95,16 @@ class StaticFile(models.Model):
     def __unicode__(self):
         return "%s - %s" % (unicode(self.static_file), self.filename)
 
+    def is_image(self):
+        if self.file_ext() in StaticFile.IMAGE_EXTENSIONS:
+            return True
+        return False
+
+    def is_video(self):
+        if self.file_ext() in StaticFile.VIDEO_EXTENSIONS:
+            return True
+        return False
+
     def file_ext(self):
         try:
             return self.filename.split('.')[-1].lower()
@@ -138,3 +151,32 @@ class StaticFile(models.Model):
     def file_path(self):
         return '%s/%s' % (settings.MEDIA_ROOT, self.static_file.name.split("/")[-1])
     
+    def make_thumbnail(self):
+        originalname = 'thumbnail.png'
+        thumbnailfilename = generate_file_path(None, originalname)
+        thumbnailfilepath = '%s/%s' % (settings.MEDIA_ROOT, thumbnailfilename)
+
+        StaticFile()
+        cmd = "ffmpeg -y -i %s -vframes 1 -ss 00:00:02 -an -vcodec png -f rawvideo %s" %\
+              ( self.static_file.path, thumbnailfilepath )
+
+        result = commands.getoutput(cmd)
+        print result
+        obj = StaticFile()
+        
+        obj.category_id = self.category_id
+        obj.static_file = thumbnailfilename
+        obj.filename = originalname
+
+        obj.save()
+
+        self.static_file_thumbnail = obj
+        self.save()
+
+        # result = commands.getoutput(cmd)
+
+@receiver(post_save, sender=StaticFile)
+def thumbnailer(sender, **kwargs):
+    obj = kwargs['instance']
+    if kwargs['created'] and 'flv' == obj.file_ext() and not obj.static_file_thumbnail :
+        obj.make_thumbnail()

@@ -1,6 +1,7 @@
 #coding: utf-8
 
 from __future__ import absolute_import
+from conf.base import STATIC_URL
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -24,7 +25,25 @@ class FileAdmin(BaseModelAdmin):
     exclude = ('author',)
      
     def icon(self, obj):
-        return '<img width="100" src="%s" />' % obj.icon_path()
+        if obj.is_image():
+            return """
+                <div class="image" style="position: relative; float: left;">
+                    <img width="100" src="%s" />
+                    <img src="%sadmin_tools/images/icon_image.png" style="position: absolute; right: 2px; bottom: 2px;" alt="Obraz" />
+                </div>
+            """ % ( obj.icon_path(), STATIC_URL )
+        
+        elif obj.is_video():
+            return """
+                <div class="video" style="position: relative; float: left;">
+                    <img width="100" src="%s" />
+                    <img src="%sadmin_tools/images/icon_movie.png" style="position: absolute; right: 2px; bottom: 2px;" alt="Wideo" />
+                </div>
+            """ % ( obj.icon_path(), STATIC_URL )
+
+        else:
+            return '<img width="100" src="%s" />' % obj.icon_path()
+        
     icon.short_description = u'Ikona'
     icon.allow_tags = True
 
