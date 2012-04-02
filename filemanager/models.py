@@ -80,7 +80,7 @@ class StaticFile(models.Model):
     author = models.ForeignKey(User, null=True, blank=True)
     category = models.ForeignKey(FileCategory, verbose_name=u"Kategoria pliku", null=True)
     static_file = models.FileField(u"Plik", upload_to=generate_file_path)
-    static_file_thumbnail = ImageField(to='self', blank=True, null=True)
+    static_file_thumbnail = ImageField(to='self', verbose_name=u'Miniaturka do pliku vide', blank=True, null=True)
     filename = models.CharField(u'Oryginalna nazwa pliku', max_length=100, blank=True,
                                 help_text=u'Przy dodawaniu pliku nazwa zapisze się samoczynnie')
     description = models.CharField(u'Krótki opis', max_length=200,
