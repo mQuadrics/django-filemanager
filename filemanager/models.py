@@ -72,6 +72,16 @@ class StaticFileManager(models.Manager):
         return self.all().videos()
 
 class StaticFile(models.Model):
+    
+    MEDIA_TYPE_VIDEO = 1
+    MEDIA_TYPE_IMAGE = 2
+    MEDIA_TYPE_MVIDEO = 3
+    
+    MEDIA_TYPE_CHOICES = (
+        (MEDIA_TYPE_VIDEO, u'Video'),
+        (MEDIA_TYPE_IMAGE, u'Obraz'),
+    )
+    
     IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'gif', 'png', 'bmp']
     VIDEO_EXTENSIONS = ['flv']
 
@@ -79,13 +89,20 @@ class StaticFile(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(User, null=True, blank=True)
     category = models.ForeignKey(FileCategory, verbose_name=u"Kategoria pliku", null=True)
+    
     static_file = models.FileField(u"Plik", upload_to=generate_file_path)
     static_file_thumbnail = ImageField(to='self',verbose_name=u"Miniaturka dla pliku video", blank=True, null=True)
     filename = models.CharField(u'Oryginalna nazwa pliku', max_length=100, blank=True,
                                 help_text=u'Przy dodawaniu pliku nazwa zapisze się samoczynnie')
     description = models.CharField(u'Krótki opis', max_length=200,
                                    help_text=u'Wyświetlany w nazwie linka')
-   
+    
+    width = models.IntegerField(u"Szerokość")
+    height = models.IntegerField(u"Długość")
+    type = models.SmallIntegerField(u'Typ', choices=MEDIA_TYPE_CHOICES, default=MEDIA_TYPE_IMAGE,
+            db_index=True)
+    crop_coords = models.CharField(u"Współrzędne przycięcia", max_length=100, blank=True,
+                                   help_text=u"Wypełniane na żywo podczas przycinania obrazka.")
     objects = StaticFileManager()
 
     class Meta:

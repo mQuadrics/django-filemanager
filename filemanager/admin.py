@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.conf.urls.defaults import patterns, url
 from django.conf import settings
+from PIL import Image
 
 from .models import StaticFile, FileCategory
 from seautils.baseadmin.admin import BaseModelAdmin
@@ -14,13 +15,14 @@ from seautils.utils import compile_js
 class FileAdmin(BaseModelAdmin):
     class Media:
         js = compile_js(['filemanager/js/admin_list.coffee', 'filemanager/js/addr_gen.coffee'])
-
+    change_form_template = 'filemanager/change_form.html'
+    
     date_hierarchy = ('create_time')
     list_display = ('icon', 'static_file', 'category', 'create_time', 'file_ext')
     list_display_links = ('static_file', 'create_time', )
     list_filter = ('category',)
     search_fields = ('filename', 'description')
-    
+    readonly_fields = ( 'width', 'height', 'type',)
     exclude = ('author',)
      
     def icon(self, obj):
@@ -55,7 +57,10 @@ class FileAdmin(BaseModelAdmin):
         obj = super( FileAdmin, self).save_form(request, form, change)
         if 'static_file' in request.FILES:
             obj.filename = request.FILES['static_file'].name
-        
+            img = Image.open(request.FILES['static_file'])
+            obj.width = img.size[0]
+            obj.height = img.size[1]
+            
         if not change:
             obj.author = request.user
         return obj
