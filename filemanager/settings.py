@@ -38,7 +38,7 @@ THUMBNAIL_COLORSPACE = 'RGB'
 THUMBNAIL_UPSCALE = True
 
 # Quality, 0-100
-THUMBNAIL_QUALITY = 95
+THUMBNAIL_QUALITY = 80 
 
 # Save as progressive when saving as jpeg
 THUMBNAIL_PROGRESSIVE = True
