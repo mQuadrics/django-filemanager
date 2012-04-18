@@ -2,14 +2,15 @@
 
 import re
 from cStringIO import StringIO
-
+from celery.log import Logging
+from twisted.python._epoll import PRI
+import os.path
 try:
     from PIL import Image, ImageFile, ImageDraw
 except ImportError:
     import Image, ImageFile, ImageDraw
 
 from . import settings
-
 
 
 bgpos_pat = re.compile(r'^(?P<value>\d+)(?P<unit>%|px)$')
@@ -123,10 +124,29 @@ class EngineBase(object):
         """
         Processing conductor, returns the thumbnail as an image engine instance
         """
+        print options['geometry']
         image = self.orientation(image, geometry, options)
         image = self.colorspace(image, geometry, options)
-        image = self.scale(image, geometry, options)
-        image = self.crop(image, geometry, options)
+        image = self.scaleFrontendImage(image, geometry, options)
+        image = self.cropFrontendImage(image, geometry, options) 
+        return image
+    
+    def cropFrontendImage(self, image, geometry, options):      
+        return image.crop((int(options['geometry']['cropX']), int(options['geometry']['cropY']),\
+                           int(options['geometry']['cropHeight']), int(options['geometry']['cropWidth'])))
+        
+        
+    def scaleFrontendImage(self, image, geometry, options):
+        crop = options['crop']
+        upscale = options['upscale']
+        x_image, y_image = map(float, self.get_image_size(image))
+        # calculate scaling factor
+        factors = (int(options['geometry']['cropHeight']) / x_image, int(options['geometry']['cropWidth']) / y_image)
+        factor = max(factors) if crop else min(factors)
+        if factor < 1 or upscale:
+            width = toint(x_image * factor)
+            height = toint(y_image * factor)
+            image = self._scale(image, width, height)
         return image
 
     def orientation(self, image, geometry, options):
@@ -303,6 +323,7 @@ class ThumbnailBackend(object):
         options given. First it will try to get it from the key value store,
         secondly it will create it.
         """
+
         source = Image.open(file_)
         for key, value in self.default_options.iteritems():
             options.setdefault(key, value)
@@ -317,6 +338,7 @@ class ThumbnailBackend(object):
         # We might as well set the size since we have the image in memory
         #size = self.engine.get_image_size(source_image)
         #source.set_size(size)
+        
         thumbnail = self._create_thumbnail(source_image, geometry_string, options)
         return thumbnail
 
@@ -340,5 +362,5 @@ class ThumbnailBackend(object):
         #size = self.engine.get_image_size(image)
         #image.set_size(size)
         return image
-
-
+        
+        
