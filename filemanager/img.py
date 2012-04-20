@@ -124,29 +124,29 @@ class EngineBase(object):
         """
         Processing conductor, returns the thumbnail as an image engine instance
         """
-        print options['geometry']
         image = self.orientation(image, geometry, options)
-        image = self.colorspace(image, geometry, options)
-        image = self.scaleFrontendImage(image, geometry, options)
-        image = self.cropFrontendImage(image, geometry, options) 
+        image = self.colorspace(image, geometry, options)       
+        if options['crop'] != False:        
+            image = self.cropFrontendImage(image, geometry, options) 
+            image = self.scaleFrontendImage(image, geometry, options)  
+             
+        image = self.crop(image, geometry, options)              
+        image = self.scale(image, geometry, options)    
         return image
     
-    def cropFrontendImage(self, image, geometry, options):      
-        return image.crop((int(options['geometry']['cropX']), int(options['geometry']['cropY']),\
-                           int(options['geometry']['cropHeight']), int(options['geometry']['cropWidth'])))
-        
+    def cropFrontendImage(self, image, geometry, options):
+        return self._crop(image,int(options['geometry']['cropWidth']),\
+                           int(options['geometry']['cropHeight']),\
+                           int(options['geometry']['cropX']), int(options['geometry']['cropY']))
         
     def scaleFrontendImage(self, image, geometry, options):
         crop = options['crop']
-        upscale = options['upscale']
-        x_image, y_image = map(float, self.get_image_size(image))
-        # calculate scaling factor
-        factors = (int(options['geometry']['cropHeight']) / x_image, int(options['geometry']['cropWidth']) / y_image)
+        x_image, y_image = (int(options['geometry']['cropWidth']), int(options['geometry']['cropHeight']))
+        factors = (float(geometry[0]) / x_image, float(geometry[1]) / y_image)
         factor = max(factors) if crop else min(factors)
-        if factor < 1 or upscale:
-            width = toint(x_image * factor)
-            height = toint(y_image * factor)
-            image = self._scale(image, width, height)
+        width = toint(x_image * factors[0])
+        height = toint(y_image * factors[1])
+        image = self._scale(image, width, height)
         return image
 
     def orientation(self, image, geometry, options):
@@ -184,6 +184,7 @@ class EngineBase(object):
         """
         Wrapper for ``_crop``
         """
+
         crop = options['crop']
         if not crop or crop == 'noop':
             return image
@@ -192,7 +193,7 @@ class EngineBase(object):
             return image
         x_offset, y_offset = parse_crop(crop, (x_image, y_image), geometry)
         return self._crop(image, geometry[0], geometry[1], x_offset, y_offset)
-
+    
     def write(self, image, options):
         """
         Wrapper for ``_write``
@@ -323,7 +324,6 @@ class ThumbnailBackend(object):
         options given. First it will try to get it from the key value store,
         secondly it will create it.
         """
-
         source = Image.open(file_)
         for key, value in self.default_options.iteritems():
             options.setdefault(key, value)
@@ -338,7 +338,7 @@ class ThumbnailBackend(object):
         # We might as well set the size since we have the image in memory
         #size = self.engine.get_image_size(source_image)
         #source.set_size(size)
-        
+
         thumbnail = self._create_thumbnail(source_image, geometry_string, options)
         return thumbnail
 

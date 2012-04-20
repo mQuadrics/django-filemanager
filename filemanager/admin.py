@@ -23,7 +23,7 @@ class FileAdmin(BaseModelAdmin):
     list_filter = ('category',)
     search_fields = ('filename', 'description')
     readonly_fields = ( 'width', 'height', 'type',)
-    exclude = ('author',)
+    exclude = ('author', 'file_version')
      
     def icon(self, obj):
         if obj.is_image():

@@ -84,7 +84,7 @@ class StaticFile(models.Model):
     
     IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'gif', 'png', 'bmp']
     VIDEO_EXTENSIONS = ['flv']
-
+    
     create_time = models.DateTimeField(u'stworzony', auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(User, null=True, blank=True)
@@ -105,12 +105,13 @@ class StaticFile(models.Model):
             db_index=True)
     crop_coords = models.CharField(u"Współrzędne przycięcia", max_length=100, blank=True,
                                    help_text=u"Wypełniane na żywo podczas przycinania obrazka.")
+    file_version = models.IntegerField(default=0,)
     objects = StaticFileManager()
 
     class Meta:
         verbose_name = u"Plik"
         verbose_name_plural = u"Pliki"
-    
+        
     def __unicode__(self):
         return "%s - %s" % (unicode(self.static_file), self.filename)
 
@@ -134,8 +135,10 @@ class StaticFile(models.Model):
 
     def image_path(self, size, crop=None):
         params = str(size)
-        if crop:
-            params += ',%s' % crop
+        params += ',%s' % str(self.file_version)
+        if crop:    
+            params += ',%s' % crop 
+            
         return reverse('filemanager.serve_img', kwargs={'file_id': self.id,
             'params': params, 'ext': self.file_ext()})
 
@@ -180,20 +183,22 @@ class StaticFile(models.Model):
               ( self.static_file.path, thumbnailfilepath )
 
         result = commands.getoutput(cmd)
-        print result
         obj = StaticFile()
         
         obj.category_id = self.category_id
         obj.static_file = thumbnailfilename
         obj.filename = originalname
-
         obj.save()
 
         self.static_file_thumbnail = obj
         self.save()
-
+        
         # result = commands.getoutput(cmd)
 
+    def save(self):
+        self.file_version = self.file_version + 1
+        super(StaticFile, self).save()
+            
 @receiver(post_save, sender=StaticFile)
 def thumbnailer(sender, **kwargs):
     obj = kwargs['instance']
