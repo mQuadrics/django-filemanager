@@ -2,9 +2,9 @@
 
 import re
 from cStringIO import StringIO
-from celery.log import Logging
-from twisted.python._epoll import PRI
-import os.path
+#from celery.log import Logging
+#from twisted.python._epoll import PRI
+#import os.path
 try:
     from PIL import Image, ImageFile, ImageDraw
 except ImportError:
