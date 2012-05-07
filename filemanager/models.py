@@ -193,11 +193,15 @@ class StaticFile(models.Model):
         self.static_file_thumbnail = obj
         self.save()
         
-        # result = commands.getoutput(cmd)
 
-    def save(self):
+    def save(self, force_insert=False, force_update=False, using=None):
         self.file_version = self.file_version + 1
-        super(StaticFile, self).save()
+        super(StaticFile, self).save(force_insert, force_update, using)
+        
+class ProxyModel(StaticFile):
+    class Meta:
+        proxy = True
+
             
 @receiver(post_save, sender=StaticFile)
 def thumbnailer(sender, **kwargs):

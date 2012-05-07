@@ -9,4 +9,4 @@ from .models import StaticFile
 class StaticFileForm(forms.models.ModelForm):
     class Meta:
         model = StaticFile
-        exclude = ('author', 'category', 'filename', 'description')
+        fields = ('author', 'category', 'filename', 'description','width','height', 'static_file')

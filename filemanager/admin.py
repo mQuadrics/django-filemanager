@@ -8,14 +8,16 @@ from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 from PIL import Image
 
-from .models import StaticFile, FileCategory
+from .models import StaticFile, FileCategory, ProxyModel
 from seautils.baseadmin.admin import BaseModelAdmin
 from seautils.utils import compile_js
 
 class FileAdmin(BaseModelAdmin):
     class Media:
         js = compile_js(['filemanager/js/admin_list.coffee', 'filemanager/js/addr_gen.coffee'])
+        js += ['filemanager/js/jquery.min.js']
     change_form_template = 'filemanager/change_form.html'
+    change_list_template = 'filemanager/change_list.html'
     
     date_hierarchy = ('create_time')
     list_display = ('icon', 'static_file', 'category', 'create_time', 'file_ext')
@@ -23,7 +25,7 @@ class FileAdmin(BaseModelAdmin):
     list_filter = ('category',)
     search_fields = ('filename', 'description')
     readonly_fields = ( 'width', 'height', 'type',)
-    exclude = ('author', 'file_version')
+    exclude = ('author', 'file_version',)
      
     def icon(self, obj):
         if obj.is_image():
@@ -88,9 +90,14 @@ class FileAdmin(BaseModelAdmin):
         return self.simple_list_view(request, extra_context, list_display=list_display, 
                                      template_path=self.change_list_template, 
                                      queryset_modifier=queryset_modifier)
-    
+
+class ProxyAdmin(FileAdmin):
+    change_form_template='filemanager/multiupload.html'
+    fields = ('category','description',)
+
 class FileCategoryAdmin(admin.ModelAdmin):
     list_display = ('name', )
 
 admin.site.register(StaticFile, FileAdmin)
 admin.site.register(FileCategory, FileCategoryAdmin)
+admin.site.register(ProxyModel, ProxyAdmin)
