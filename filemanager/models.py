@@ -19,7 +19,6 @@ from filemanager.fields import ImageField
 from .settings import ICONS_PATH_FORMAT_STR, AVAILABLE_ICONS, IMAGE_ICON_NAME, IMAGE_ICONS
 import math
 
-
 def generate_file_path(instance, filename):
     
     # Get last ID
@@ -89,6 +88,7 @@ class StaticFile(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(User, null=True, blank=True)
     category = models.ForeignKey(FileCategory, verbose_name=u"Kategoria pliku", null=True)
+    image_author = models.CharField(null=True, blank=True, verbose_name="Autor", max_length=128,)
     
     static_file = models.FileField(u"Plik", upload_to=generate_file_path)
 

@@ -26,7 +26,7 @@ class FileAdmin(BaseModelAdmin):
     search_fields = ('filename', 'description')
     readonly_fields = ( 'width', 'height', 'type',)
     exclude = ('author', 'file_version',)
-     
+ 
     def icon(self, obj):
         if obj.is_image():
             return """
@@ -93,7 +93,7 @@ class FileAdmin(BaseModelAdmin):
 
 class ProxyAdmin(FileAdmin):
     change_form_template='filemanager/multiupload.html'
-    fields = ('category','description',)
+    fields = ('category','image_author','description',)
 
 class FileCategoryAdmin(admin.ModelAdmin):
     list_display = ('name', )

@@ -125,6 +125,7 @@ def upload_multiple(request):
         callback = request.GET.get( 'callback', None ) 
         categoryNumber =  request.GET['category']
         description = request.GET['description']
+        image_author = request.GET['image_author']
         filename = request.GET['qqfile']
         
         file_contents = SimpleUploadedFile(filename, request.raw_post_data)
@@ -137,6 +138,7 @@ def upload_multiple(request):
         st.category = FileCategory.objects.get(id=categoryNumber)
         st.static_file = file_contents
         st.filename = filename
+        st.image_author = image_author
         st.description = description
         st.width = img.size[0]
         st.height = img.size[1]
