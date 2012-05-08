@@ -30,7 +30,17 @@
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
 
 .qq-upload-cancel {
-	display:inline-block; 
+	/*display:inline-block;*/
+	width:105px;
+	padding: 7px 0;
+	margin-left:10px;
+	/*background:#5B80B2; */
+/*	border-bottom:1px solid #ddd;*/
+	/*color:#fff;*/
+/*	text-align:center;*/
+}
+.qq-cancel-all {
+	display:inline-block;
 	width:105px;
 	padding: 7px 0;
 	margin-left:10px;
