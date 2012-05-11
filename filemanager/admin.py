@@ -22,7 +22,7 @@ class FileAdmin(BaseModelAdmin):
     date_hierarchy = ('create_time')
     list_display = ('icon', 'static_file', 'category', 'create_time', 'file_ext')
     list_display_links = ('static_file', 'create_time', )
-    list_filter = ('category',)
+    list_filter = ('create_time','category',)
     search_fields = ('filename', 'description')
     readonly_fields = ( 'width', 'height', 'type',)
     exclude = ('author', 'file_version',)
