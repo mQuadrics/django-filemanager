@@ -144,7 +144,6 @@ class EngineBase(object):
         crop = options['crop']
         x_image, y_image = (int(options['geometry']['cropWidth']), int(options['geometry']['cropHeight']))
         factors = (float(geometry[0]) / x_image, float(geometry[1]) / y_image)
-        print factors
         factor = max(factors) if crop else min(factors)
 #        width = toint(x_image * factors[0])
 #        height = toint(y_image * factors[1])
