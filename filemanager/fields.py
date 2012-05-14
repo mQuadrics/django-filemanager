@@ -16,7 +16,7 @@ from seautils.utils import compile_js
 
 class ImageWidget(Widget):
     POPUP_ADDR_BASE = '/staticfile/popuplist/image/'
-    POPUP_ADDR_PREFIX = '/filemanager'
+    POPUP_ADDR_PREFIX = '/cms/filemanager'
     DEFAULT_POPUP_ADDR = '%s%s' % (POPUP_ADDR_PREFIX, POPUP_ADDR_BASE)
 
     class Media:
