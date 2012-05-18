@@ -83,27 +83,26 @@ def serve_img(request, file_id, params, ext):
     static_file = get_object_or_404(StaticFile, id=file_id)
     
     if static_file and static_file.crop_coords != "":
-        crop_coords = map(int, static_file.crop_coords.split(','))   
-    else:
-        crop_coords = (0,0,static_file.width, static_file.height)       
-    crop = {
+        crop_coords = map(int, static_file.crop_coords.split(','))        
+        crop = {
                 'transformation': 0,
                 'cropX': crop_coords[0],
                 'cropY': crop_coords[1],
                 'cropWidth': crop_coords[2],
                 'cropHeight': crop_coords[3],
-            }
+                }
     # TODO oryginalny rozmiar
     tb = ThumbnailBackend()
     size_str = "%sx%s" % (size[0], size[1]) if size != -1 else ''
     thumb_args = [static_file.static_file, size_str]
     thumb_kwargs = {}
     
-    if crop_param and crop:
+    if crop_param:
         thumb_kwargs['crop'] = crop_param
+    if crop:
         thumb_kwargs['geometry'] = crop
-    #if static_file.crop_coords != "":
-
+    else:
+        thumb_kwargs['geometry'] = None
     ni = tb.get_thumbnail(*thumb_args, **thumb_kwargs)
 
     mimetype, encoding = mimetypes.guess_type(static_file.filename)

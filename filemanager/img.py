@@ -125,14 +125,16 @@ class EngineBase(object):
         Processing conductor, returns the thumbnail as an image engine instance
         """
         image = self.orientation(image, geometry, options)
-        image = self.colorspace(image, geometry, options)       
-        if options['crop'] != False:        
-            image = self.cropFrontendImage(image, geometry, options)          
-            image = self.scaleFrontendImage(image, geometry, options)  
-
+        image = self.colorspace(image, geometry, options)  
              
+           
+        if options['crop'] != False and options['geometry']:            
+            image = self.cropFrontendImage(image, geometry, options) 
+            image = self.scaleFrontendImage(image, geometry, options)   
+                     
+        image = self.scale(image, geometry, options)  
         image = self.crop(image, geometry, options)              
-        image = self.scale(image, geometry, options)    
+            
         return image
     
     def cropFrontendImage(self, image, geometry, options):
@@ -144,7 +146,7 @@ class EngineBase(object):
         crop = options['crop']
         x_image, y_image = (int(options['geometry']['cropWidth']), int(options['geometry']['cropHeight']))
         factors = (float(geometry[0]) / x_image, float(geometry[1]) / y_image)
-        factor = max(factors) if crop else min(factors)
+        factor = max(factors)# if crop else min(factors)
 #        width = toint(x_image * factors[0])
 #        height = toint(y_image * factors[1])
         width = toint(x_image * factor)
