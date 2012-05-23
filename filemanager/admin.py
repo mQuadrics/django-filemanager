@@ -26,7 +26,7 @@ class FileAdmin(BaseModelAdmin):
     search_fields = ('filename', 'description')
     readonly_fields = ( 'width', 'height', 'type',)
     exclude = ('author', 'file_version',)
- 
+    ordering = ('-create_time',)
     def icon(self, obj):
         if obj.is_image():
             return """

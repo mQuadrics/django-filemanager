@@ -109,8 +109,8 @@ class StaticFile(models.Model):
     objects = StaticFileManager()
 
     class Meta:
-        verbose_name = u"Plik"
-        verbose_name_plural = u"Pliki"
+        verbose_name = u"Zdjęcie"
+        verbose_name_plural = u"Zdjęcia"
         
     def __unicode__(self):
         return "%s - %s" % (unicode(self.static_file), self.filename)

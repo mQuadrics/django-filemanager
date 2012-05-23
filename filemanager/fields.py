@@ -11,7 +11,6 @@ from django.conf import settings
 
 from south.modelsinspector import add_introspection_rules
 
-
 from seautils.utils import compile_js
 
 class ImageWidget(Widget):
