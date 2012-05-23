@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
-from filemanager.fields import ImageField
+from .fields import ImageField
 
 from .settings import ICONS_PATH_FORMAT_STR, AVAILABLE_ICONS, IMAGE_ICON_NAME, IMAGE_ICONS
 import math
