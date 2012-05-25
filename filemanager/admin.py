@@ -98,7 +98,7 @@ class FileAdmin(BaseModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if change == False and request.POST['_saveasnew'] == 'Zapisz jako nowe':  
-            path_info = request.META['PATH_INFO']
+            path_info = request.META['HTTP_REFERER']
             id = path_info.split('/')[-2:-1]    #old image id - table of size 1  
             s_file = StaticFile.objects.get(pk = int(id[0]))    
             path = generate_file_path(None, request.POST['filename'])
