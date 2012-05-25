@@ -41,7 +41,7 @@ def generate_file_path(instance, filename):
 class FileCategory(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
-    name = models.CharField(u"Nazwa", max_length=200)
+    name = models.CharField(u"Nazwa", max_length=200, help_text=u"Format: rrrr-mm-dd_nazwa_galerii")
     
     class Meta:
         verbose_name = u"Kategoria pliku"

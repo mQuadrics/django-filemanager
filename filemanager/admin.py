@@ -104,26 +104,22 @@ class FileAdmin(BaseModelAdmin):
             old_path = s_file.static_file
             img_path = 'uploads/'+str(old_path)
             result = img_path #urllib.urlretrieve(img_path)   #uploads/folder/filename.ext
-            #print result
-            #result = s_file.static_file
-            print result
+
             if request.POST['crop_coords'] != "":
                 crop_coords = map(int, request.POST['crop_coords'].split(','))
-                #img = Image.open(result)
                 file = default_storage.open(old_path)
                 img = Image.open(file)
                 cropped_img = img.crop((crop_coords[0], crop_coords[1], crop_coords[0]+ crop_coords[2], crop_coords[1] + crop_coords[3]))
-                f = default_storage.path(old_path)
-                cf = cropped_img.save(default_storage.path(path))
-                obj.width, obj.height = cropped_img.size
-                obj.static_file.save(path, File(open(default_storage.path(path))), save=True)
-                
+                cropped_img.save(default_storage.path(path))
+                obj.width, obj.height = cropped_img.size         
                 obj.crop_coords = ''
             else:
-                img = Image.open(result)
-                img.save('uploads/'+path)
+                file = default_storage.open(old_path)
+                img = Image.open(file)
+                img.save(default_storage.path(path))
                 obj.width, obj.height = img.size
-            #obj.static_file.save('uploads/'+path,File(open('uploads/'+path)))
+            obj.static_file.save(path, File(open(default_storage.path(path))), save=True)
+
             obj.user = request.user
             obj.save()
 
