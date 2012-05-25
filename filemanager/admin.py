@@ -102,7 +102,9 @@ class FileAdmin(BaseModelAdmin):
             path = generate_file_path(None, request.POST['filename'])
             old_path = s_file.static_file
             img_path = 'uploads/'+str(old_path)
-            result = img_path #urllib.urlretrieve(img_path)   #uploads/folder/filename.ext
+            #result = img_path #urllib.urlretrieve(img_path)   #uploads/folder/filename.ext
+            #print result
+            result = s_file.static_file
             print result
             if request.POST['crop_coords'] != "":
                 crop_coords = map(int, request.POST['crop_coords'].split(','))
