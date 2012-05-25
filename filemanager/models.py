@@ -90,7 +90,7 @@ class StaticFile(models.Model):
     category = models.ForeignKey(FileCategory, verbose_name=u"Kategoria pliku", null=True)
     image_author = models.CharField(null=True, blank=True, verbose_name="Autor", max_length=128,)
     
-    static_file = models.FileField(u"Plik", upload_to=generate_file_path)
+    static_file = models.FileField(u"Plik", upload_to=generate_file_path, blank=True)
 
     static_file_thumbnail = ImageField(to='self', verbose_name=u'Miniaturka dla pliku video', blank=True, null=True)
 
@@ -105,6 +105,7 @@ class StaticFile(models.Model):
             db_index=True)
     crop_coords = models.CharField(u"Współrzędne przycięcia", max_length=100, blank=True,
                                    help_text=u"Wypełniane na żywo podczas przycinania obrazka.")
+    
     file_version = models.IntegerField(default=0,)
     objects = StaticFileManager()
 
@@ -197,7 +198,8 @@ class StaticFile(models.Model):
     def save(self, force_insert=False, force_update=False, using=None):
         self.file_version = self.file_version + 1
         super(StaticFile, self).save(force_insert, force_update, using)
-        
+
+    
 class ProxyModel(StaticFile):
     class Meta:
         proxy = True

@@ -8,9 +8,12 @@ from django.conf.urls.defaults import patterns, url
 from django.conf import settings
 from PIL import Image
 
-from .models import StaticFile, FileCategory, ProxyModel
+from .models import StaticFile, FileCategory, ProxyModel, generate_file_path
 from seautils.baseadmin.admin import BaseModelAdmin
 from seautils.utils import compile_js
+from copy import copy
+import urllib
+from django.core.files import File
 
 class FileAdmin(BaseModelAdmin):
     class Media:
@@ -27,6 +30,8 @@ class FileAdmin(BaseModelAdmin):
     readonly_fields = ( 'width', 'height', 'type',)
     exclude = ('author', 'file_version',)
     ordering = ('-create_time',)
+    save_as = True
+    
     def icon(self, obj):
         if obj.is_image():
             return """
@@ -90,6 +95,33 @@ class FileAdmin(BaseModelAdmin):
         return self.simple_list_view(request, extra_context, list_display=list_display, 
                                      template_path=self.change_list_template, 
                                      queryset_modifier=queryset_modifier)
+
+    def save_model(self, request, obj, form, change):
+        if change == False and request.POST['_saveasnew'] == 'Zapisz jako nowe':  
+            path_info = request.META['PATH_INFO']
+            id = path_info.split('/')[-2:-1]    #old image id - table of size 1  
+            s_file = StaticFile.objects.get(pk = int(id[0]))    
+            path = generate_file_path(None, request.POST['filename'])
+            old_path = s_file.static_file
+            img_path = 'uploads/'+str(old_path)
+            result = urllib.urlretrieve(img_path)
+            if request.POST['crop_coords'] != "":
+                crop_coords = map(int, request.POST['crop_coords'].split(','))
+                img = Image.open(result[0])
+                cropped_img = img.crop((crop_coords[0], crop_coords[1], crop_coords[0]+ crop_coords[2], crop_coords[1] + crop_coords[3]))
+                cropped_img.save('uploads/'+path)
+                obj.width, obj.height = cropped_img.size
+                obj.crop_coords = ''
+            else:
+                img = Image.open(result[0])
+                img.save('uploads/'+path)
+                obj.width, obj.height = img.size
+            obj.static_file.save('uploads/'+path,File(open('uploads/'+path)))
+            obj.user = request.user
+            obj.save()
+
+        else:
+            return super(FileAdmin, self).save_model(request, obj, form, change)   
 
 class ProxyAdmin(FileAdmin):
     change_form_template='filemanager/multiupload.html'

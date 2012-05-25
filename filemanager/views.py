@@ -24,8 +24,8 @@ from seautils.views.decorators import render_with
 from django.template.context import RequestContext
 from django.utils.functional import SimpleLazyObject
 from django.contrib.auth.models import User
-from filemanager.fields import ImageField
-from filemanager.models import generate_file_path
+from .fields import ImageField
+from .models import generate_file_path
 from django.db.models.fields.files import FileField
 from os.path import basename
 from django.utils import simplejson as json

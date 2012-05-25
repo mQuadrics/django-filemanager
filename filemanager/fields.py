@@ -33,7 +33,7 @@ class ImageWidget(Widget):
         final_attrs['type'] = 'hidden'
 
         # wyciagniecie odpowiedniego media dla podanego id
-        from filemanager.models import StaticFile
+        from .models import StaticFile
         try:
 
             media = StaticFile.objects.get(id=value)
@@ -77,10 +77,10 @@ class ImageField(ForeignKey):
         argsl = list(args)
         if 'to' in kwargs:
             if kwargs['to'] != 'self':
-                from filemanager.models import StaticFile
+                from .models import StaticFile
                 kwargs['to'] = StaticFile
         else:
-            from filemanager.models import StaticFile
+            from .models import StaticFile
             if argsl:
                 argsl[0] = StaticFile
             else:
