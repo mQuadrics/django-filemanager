@@ -12,6 +12,7 @@ from .models import StaticFile, FileCategory, ProxyModel, generate_file_path
 from seautils.baseadmin.admin import BaseModelAdmin
 from seautils.utils import compile_js
 from django.core.files import File
+from django.core.files.storage import default_storage
 
 class FileAdmin(BaseModelAdmin):
     class Media:
@@ -102,22 +103,27 @@ class FileAdmin(BaseModelAdmin):
             path = generate_file_path(None, request.POST['filename'])
             old_path = s_file.static_file
             img_path = 'uploads/'+str(old_path)
-            #result = img_path #urllib.urlretrieve(img_path)   #uploads/folder/filename.ext
+            result = img_path #urllib.urlretrieve(img_path)   #uploads/folder/filename.ext
             #print result
-            result = s_file.static_file
+            #result = s_file.static_file
             print result
             if request.POST['crop_coords'] != "":
                 crop_coords = map(int, request.POST['crop_coords'].split(','))
-                img = Image.open(result)
+                #img = Image.open(result)
+                file = default_storage.open(old_path)
+                img = Image.open(file)
                 cropped_img = img.crop((crop_coords[0], crop_coords[1], crop_coords[0]+ crop_coords[2], crop_coords[1] + crop_coords[3]))
-                cropped_img.save('uploads/'+path)
+                f = default_storage.path(old_path)
+                cf = cropped_img.save(default_storage.path(path))
                 obj.width, obj.height = cropped_img.size
+                obj.static_file.save(path, File(open(default_storage.path(path))), save=True)
+                
                 obj.crop_coords = ''
             else:
                 img = Image.open(result)
                 img.save('uploads/'+path)
                 obj.width, obj.height = img.size
-            obj.static_file.save('uploads/'+path,File(open('uploads/'+path)))
+            #obj.static_file.save('uploads/'+path,File(open('uploads/'+path)))
             obj.user = request.user
             obj.save()
 
