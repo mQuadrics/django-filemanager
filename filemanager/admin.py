@@ -36,7 +36,7 @@ class FileAdmin(BaseModelAdmin):
             return """
                 <div class="image" style="position: relative; float: left;">
                     <img width="100" src="%s" />
-                    <img src="%sadmin_tools/images/icon_image.png" style="position: absolute; right: 2px; bottom: 2px;" alt="Obraz" />
+                    <img src="%sadmin_tools/images/icon_image.png" style="position: absolute; right: 2px; bottom: 2px;" alt="" />
                 </div>
             """ % ( obj.icon_path(), settings.STATIC_URL )
         
@@ -44,7 +44,7 @@ class FileAdmin(BaseModelAdmin):
             return """
                 <div class="video" style="position: relative; float: left;">
                     <img width="100" src="%s" />
-                    <img src="%sadmin_tools/images/icon_movie.png" style="position: absolute; right: 2px; bottom: 2px;" alt="Wideo" />
+                    <img src="%sadmin_tools/images/icon_movie.png" style="position: absolute; right: 2px; bottom: 2px;" alt="" />
                 </div>
             """ % ( obj.icon_path(), settings.STATIC_URL )
 
@@ -55,8 +55,10 @@ class FileAdmin(BaseModelAdmin):
     icon.allow_tags = True
 
     def select_button(self, obj):
-        return """<button ref="%d" name="%s" addr="%s" class="insert-button">Wstaw </button>""" \
-                    % (obj.id, obj.filename, obj.static_file.url)
+        img_path = "../../"+str(obj.id)+"/"
+#        return """<button ref="%d" name="%s" addr="%s" class="insert-button">Edytuj </button>""" \
+#                    % (obj.id, obj.filename, obj.static_file.url)
+        return "<a href="+img_path+" target='_blank'>edytuj</a>"
     select_button.allow_tags = True
 
     def save_form(self, request, form, change):
