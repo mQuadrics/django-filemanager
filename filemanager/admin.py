@@ -56,9 +56,9 @@ class FileAdmin(BaseModelAdmin):
 
     def select_button(self, obj):
         img_path = "../../"+str(obj.id)+"/"
-#        return """<button ref="%d" name="%s" addr="%s" class="insert-button">Edytuj </button>""" \
-#                    % (obj.id, obj.filename, obj.static_file.url)
-        return "<a href="+img_path+" target='_blank'>edytuj</a>"
+        return """<button ref="%d" name="%s" addr="%s" class="insert-button">Edytuj </button>""" \
+                    % (obj.id, obj.filename, obj.static_file.url)
+        #return "<a href="+img_path+" target='_blank'>edytuj</a>"
     select_button.allow_tags = True
 
     def save_form(self, request, form, change):
