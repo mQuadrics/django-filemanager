@@ -15,6 +15,10 @@ from django.core.urlresolvers import reverse
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
 from .fields import ImageField
+from PIL import Image
+from PIL.ExifTags import TAGS
+from django.core.files.storage import default_storage
+
 
 from .settings import ICONS_PATH_FORMAT_STR, AVAILABLE_ICONS, IMAGE_ICON_NAME, IMAGE_ICONS
 import math
@@ -98,7 +102,7 @@ class StaticFile(models.Model):
                                 help_text=u'Przy dodawaniu pliku nazwa zapisze się samoczynnie')
     description = models.CharField(u'Krótki opis', max_length=200,
                                    help_text=u'Wyświetlany w nazwie linka')
-    
+    exif_caption = models.CharField(u'Opis z właściwości zdjęcia', max_length=512, blank=True, null=True,)
     width = models.IntegerField(u"Szerokość")
     height = models.IntegerField(u"Długość")
     type = models.SmallIntegerField(u'Typ', choices=MEDIA_TYPE_CHOICES, default=MEDIA_TYPE_IMAGE,
@@ -135,6 +139,7 @@ class StaticFile(models.Model):
     
 
     def image_path(self, size, crop=None):
+        
         params = str(size)
         params += ',%s' % str(self.file_version)
         if crop:    
@@ -143,7 +148,7 @@ class StaticFile(models.Model):
         return reverse('filemanager.serve_img', kwargs={'file_id': self.id,
             'params': params, 'ext': self.file_ext()})
 
-    def url(self):
+    def url(self):                  
         if self.static_file_thumbnail:
             return self.static_file_thumbnail.image_path(1)
 
@@ -178,14 +183,12 @@ class StaticFile(models.Model):
         originalname = 'thumbnail.png'
         thumbnailfilename = generate_file_path(None, originalname)
         thumbnailfilepath = '%s/%s' % (settings.MEDIA_ROOT, thumbnailfilename)
-
         StaticFile()
         cmd = "ffmpeg -y -i %s -vframes 1 -ss 00:00:02 -an -vcodec png -f rawvideo %s" %\
               ( self.static_file.path, thumbnailfilepath )
 
         result = commands.getoutput(cmd)
         obj = StaticFile()
-        
         obj.category_id = self.category_id
         obj.static_file = thumbnailfilename
         obj.filename = originalname
@@ -196,7 +199,22 @@ class StaticFile(models.Model):
         
 
     def save(self, force_insert=False, force_update=False, using=None):
-        self.file_version = self.file_version + 1
+        self.file_version = self.file_version + 1        
+        super(StaticFile, self).save(force_insert, force_update, using)
+        path = self.static_file
+        file = default_storage.open(path)
+        img = Image.open(file)
+        ret = {}
+        exif_desc = ''
+        if hasattr( img, '_getexif' ):
+            exifinfo = img._getexif()
+            if exifinfo != None:
+                for tag, value in exifinfo.items():
+                    decoded = TAGS.get(tag, tag)
+                    ret[decoded] = value
+        if ret.has_key('UserComment'): 
+            exif_desc = ret['UserComment']
+        self.exif_caption = exif_desc
         super(StaticFile, self).save(force_insert, force_update, using)
 
     
@@ -206,7 +224,7 @@ class ProxyModel(StaticFile):
 
             
 @receiver(post_save, sender=StaticFile)
-def thumbnailer(sender, **kwargs):
+def thumbnailer(sender, **kwargs):      
     obj = kwargs['instance']
     if kwargs['created'] and 'flv' == obj.file_ext() and not obj.static_file_thumbnail :
         obj.make_thumbnail()

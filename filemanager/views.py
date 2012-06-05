@@ -31,7 +31,8 @@ from os.path import basename
 from django.utils import simplejson as json
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
-
+from PIL.ExifTags import TAGS
+from django.core.files.storage import default_storage
 
 file_uploaded = Signal(providing_args=["signal_key", "static_file_instance"])
 
@@ -129,7 +130,17 @@ def upload_multiple(request):
         
         file_contents = SimpleUploadedFile(filename, request.raw_post_data)
         img = Image.open(file_contents)
-
+        ret = {}
+        exif_desc = ''
+        if hasattr( img, '_getexif' ):
+            exifinfo = img._getexif()
+            if exifinfo != None:
+                for tag, value in exifinfo.items():
+                    decoded = TAGS.get(tag, tag)
+                    ret[decoded] = value
+        if ret.has_key('UserComment'): 
+            exif_desc = ret['UserComment']
+            
         path = generate_file_path(None, request.GET['qqfile'])
 
         st = StaticFile()
@@ -137,11 +148,12 @@ def upload_multiple(request):
         st.category = FileCategory.objects.get(id=categoryNumber)
         st.static_file = file_contents
         st.filename = filename
+        st.exif_caption = exif_desc
         st.image_author = image_author
         st.description = description
         st.width = img.size[0]
         st.height = img.size[1]
-        st.save(force_insert=True)
+        st.save()
         path = basename(path).split('.')[0]
         path = "/files/img/%d,%d,%d.%s" % (int(path) + 1, st.type, st.file_version, st.file_ext())  
         return HttpResponse(json.dumps ({"path": path}), mimetype="application/json")
