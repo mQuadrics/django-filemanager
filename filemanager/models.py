@@ -102,7 +102,6 @@ class StaticFile(models.Model):
                                 help_text=u'Przy dodawaniu pliku nazwa zapisze się samoczynnie')
     description = models.CharField(u'Krótki opis', max_length=200,
                                    help_text=u'Wyświetlany w nazwie linka')
-    exif_caption = models.CharField(u'Opis z właściwości zdjęcia', max_length=512, blank=True, null=True,)
     width = models.IntegerField(u"Szerokość")
     height = models.IntegerField(u"Długość")
     type = models.SmallIntegerField(u'Typ', choices=MEDIA_TYPE_CHOICES, default=MEDIA_TYPE_IMAGE,
@@ -214,7 +213,8 @@ class StaticFile(models.Model):
                     ret[decoded] = value
         if ret.has_key('UserComment'): 
             exif_desc = ret['UserComment']
-        self.exif_caption = exif_desc
+        if self.description == "":
+            self.description = exif_desc
         super(StaticFile, self).save(force_insert, force_update, using)
 
     

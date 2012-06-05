@@ -148,9 +148,11 @@ def upload_multiple(request):
         st.category = FileCategory.objects.get(id=categoryNumber)
         st.static_file = file_contents
         st.filename = filename
-        st.exif_caption = exif_desc
         st.image_author = image_author
-        st.description = description
+        if description == "":
+            st.description = exif_desc
+        else:
+            st.description = description
         st.width = img.size[0]
         st.height = img.size[1]
         st.save()
