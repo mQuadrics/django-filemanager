@@ -207,13 +207,13 @@ class StaticFile(models.Model):
         exif_desc = ''
         if hasattr( img, '_getexif' ):
             exifinfo = img._getexif()
-            if exifinfo != None:
+            if exifinfo:
                 for tag, value in exifinfo.items():
                     decoded = TAGS.get(tag, tag)
-                    ret[decoded] = value
-        if ret.has_key('UserComment'): 
-            exif_desc = ret['UserComment']
-        if self.description == "":
+                    if decoded in ['ImageDescription']:
+                        exif_desc = value
+                        break
+        if not self.description:
             self.description = exif_desc
         super(StaticFile, self).save(force_insert, force_update, using)
 
