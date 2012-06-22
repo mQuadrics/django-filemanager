@@ -100,7 +100,7 @@ class StaticFile(models.Model):
 
     filename = models.CharField(u'Oryginalna nazwa pliku', max_length=100, blank=True,
                                 help_text=u'Przy dodawaniu pliku nazwa zapisze się samoczynnie')
-    description = models.CharField(u'Krótki opis', max_length=200, blank=True,
+    description = models.CharField(u'Krótki opis', max_length=256, blank=True,
                                    help_text=u'Wyświetlany w nazwie linka')
     width = models.IntegerField(u"Szerokość")
     height = models.IntegerField(u"Długość")
@@ -211,7 +211,7 @@ class StaticFile(models.Model):
                 for tag, value in exifinfo.items():
                     decoded = TAGS.get(tag, tag)
                     if decoded in ['ImageDescription']:
-                        exif_desc = value
+                        exif_desc = value.decode('ascii')
                         break
         if not self.description:
             self.description = exif_desc
